@@ -277,6 +277,11 @@ while 1:
     else:
         break
 
+while len(left_ports) < len(right_ports):
+    left_ports.append(-1)
+while len(left_ports) > len(right_ports):
+    right_ports.insert(0, -1)
+
 while 1:
     if len(right_ports) < 5:
         right_ports.append(-1)
@@ -286,11 +291,6 @@ while 1:
         right_ports.insert(0, -1)
     else:
         break
-
-while len(left_ports) < len(right_ports):
-    left_ports.append(-1)
-while len(left_ports) > len(right_ports):
-    right_ports.insert(0, -1)
 
 with open(output_dir + file_name + "_top.svg", "w") as write_file:
     write_file.write(
