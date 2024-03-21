@@ -168,12 +168,12 @@ with open(output_dir + file_name + ".md", "w") as write_file:
 
     if file_type == "module" or file_type == "program" or file_type == "interface":
         write_file.write(f"## TOP IO\n")
-        write_file.write(f'<img src="{output_dir}{file_name}_top.svg">\n\n')
+        write_file.write(f'<img src="./{file_name}_top.svg">\n\n')
 
     write_file.write(f"## Description\n{file_description}\n\n")
 
     if file_exists(output_dir + file_name + "_des.svg"):
-        write_file.write(f'<img src="{output_dir}{file_name}_des.svg">\n\n')
+        write_file.write(f'<img src="./{file_name}_des.svg">\n\n')
 
     write_file.write("## Parameters\n")
     write_file.write("|Name|Type|Dimension|Default Value|Description|\n")
@@ -260,10 +260,12 @@ if left_ports[0] == -1:
 if right_ports[0] == -1:
     right_ports.pop(0)
 
-if left_ports[len(left_ports) - 1] == -1:
-    left_ports.pop(len(left_ports) - 1)
-if right_ports[len(right_ports) - 1] == -1:
-    right_ports.pop(len(right_ports) - 1)
+if (len(left_ports) > 0):
+    if left_ports[len(left_ports) - 1] == -1:
+        left_ports.pop(len(left_ports) - 1)
+if (len(right_ports) > 0):
+    if right_ports[len(right_ports) - 1] == -1:
+        right_ports.pop(len(right_ports) - 1)
 
 while len(left_ports) < len(right_ports):
     left_ports.append(-1)
