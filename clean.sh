@@ -1,2 +1,3 @@
 #!bash
-rm -rf __pycache__
+rm -rf $(cat .gitignore | sed "s/\n//g")
+git restore README.md
