@@ -1,5 +1,7 @@
 #!python
 
+from rtl_svg import draw_port_IL, draw_port_IOL, draw_port_OL, draw_port_IR, draw_port_IOR, draw_port_OR
+from rtl_svg import draw_TEXT_L, draw_TEXT_R
 from general import c_header, get_block
 
 import re
@@ -132,18 +134,24 @@ str_lines = re.sub(f" end{file_type} *", "", str_lines)
 
 # write to file
 if (len(sys.argv) > 2):
-    write_file_name = sys.argv[2]
+    output_dir = sys.argv[2]
 else:
-    write_file_name = "default.md"
-write_file_name = "default.md"
-with open(write_file_name, 'w') as write_file:
-    # Header
+    output_dir = "./"
+if output_dir[-1] != "/": output_dir = output_dir + "/"
+
+
+with open(output_dir + file_name + ".md", 'w') as write_file:
+
     write_file.write(f"# {file_name} ({file_type})\n\n")
-    # Author
+
     write_file.write(f"### Author : {file_author}\n\n")
-    # Description
-    write_file.write(f"{file_description}\n\n")
-    # Parameters
+
+    if (file_type == "module" or file_type == "program" or file_type == "interface"):
+        write_file.write(f"## TOP IO\n")
+        write_file.write(f"<img src=\"{output_dir}{file_name}_top.svg\">\n\n")
+
+    write_file.write(f"## Description\n{file_description}\n\n")
+
     write_file.write("## Parameters\n")
     write_file.write("|Name|Type|Dimension|Default Value|Description|\n")
     write_file.write("|-|-|-|-|-|\n")
@@ -154,18 +162,112 @@ with open(write_file_name, 'w') as write_file:
         write_file.write("|" + param["def"])
         write_file.write("|" + param["des"])
         write_file.write("|\n")
-    
+
     write_file.write("\n")  
 
-    # Ports
-    write_file.write("## Ports\n")
-    write_file.write("|Name|Direction|Type|Dimension|Description|\n")
-    write_file.write("|-|-|-|-|-|\n")
-    for port in ports:
-        write_file.write("|" + port["name"])
-        write_file.write("|" + port["dir"])
-        write_file.write("|" + port["type"])
-        write_file.write("|" + port["dim"])
-        write_file.write("|" + port["des"])
-        write_file.write("|\n")
+    if (file_type == "module" or file_type == "program" or file_type == "interface"):
+        write_file.write("## Ports\n")
+        write_file.write("|Name|Direction|Type|Dimension|Description|\n")
+        write_file.write("|-|-|-|-|-|\n")
+        for port in ports:
+            write_file.write("|" + port["name"])
+            write_file.write("|" + port["dir"])
+            write_file.write("|" + port["type"])
+            write_file.write("|" + port["dim"])
+            write_file.write("|" + port["des"])
+            write_file.write("|\n")
+
+
+for __start in range (len(lines)):
+    line = re.sub("//.*", "", lines[__start])
+    if (ports[0]["name"] in line): break
+for __end in range (len(lines)):
+    line = re.sub("//.*", "", lines[__end])
+    if (ports[len(ports)-1]["name"] in line): break
+port_lines = lines [__start:__end+1]
+
+__str = ""
+for line in port_lines:
+    __str = __str + line + "\n"
+__str = re.sub("^ *//.*\n", "", __str, flags=re.MULTILINE)
+port_lines = __str.split("\n")
+
+num = 0
+for port in ports:
+    for i in range (len(port_lines)):
+        line = re.sub(" *//.*", "", port_lines[i])
+        if (port["name"] in line): break
+    ports[num]["index"] = i
+    num += 1
+
+k=-1
+left_ports = []
+right_ports = []
+for i in range(len(ports)):
+    if (ports[i]["index"] != k):
+        left_ports.append(-1)
+        right_ports.append(-1)
+        k = ports[i]["index"]
+        if (ports[i]["dir"] == "input"):
+            now_side = "l"
+            left_ports.append(i)
+        else:
+            now_side = "r"
+            right_ports.append(i)
+    else:
+        if (now_side == "l"):
+            left_ports.append(i)
+        else:
+            right_ports.append(i)
+    k = k + 1
+
+for i in range (len(left_ports)-1,0,-1):
+    if (left_ports[i-1]==left_ports[i]):
+        left_ports.pop(i-1)
+
+for i in range (len(right_ports)-1,0,-1):
+    if (right_ports[i-1]==right_ports[i]):
+        right_ports.pop(i-1)
+
+if (left_ports[0]==-1):left_ports.pop(0)
+if (right_ports[0]==-1):right_ports.pop(0)
+
+if (left_ports[len(left_ports)-1]==-1):left_ports.pop(len(left_ports)-1)
+if (right_ports[len(right_ports)-1]==-1):right_ports.pop(len(right_ports)-1)
+
+while (len(left_ports) < len(right_ports)): left_ports.append(-1)
+while (len(left_ports) > len(right_ports)): right_ports.insert(0, -1)
+
+with open(output_dir + file_name + "_top.svg", 'w') as write_file:
+    write_file.write(f'<svg height="{140+len(left_ports)*50}" width="{140+len(left_ports)*50}" xmlns="http://www.w3.org/2000/svg">\n')
+    write_file.write('<rect width="100%" height="100%" x="0" y="0" style="fill:white;stroke:white;stroke-width:0"/>\n')
+    write_file.write('<g style="fill:white;stroke:black;stroke-width:1">\n')
+    write_file.write(f'<rect width="{len(left_ports)*50+25}" height="{len(left_ports)*50+25}" x="60" y="60"/>\n')
+
+    x= 10
+    y = 85
+    for i in left_ports:
+        if (i != -1):
+            if (ports[i]["dir"] == "input"): write_file.write(draw_port_IL(x, y))
+            elif (ports[i]["dir"] == "output"): write_file.write(draw_port_OL(x, y))
+            else: write_file.write(draw_port_IOL(x, y))
+            write_file.write(draw_TEXT_L(ports[i]["name"], x+55, y))
+
+        y = y + 50
+    
+    x = len(left_ports)*50+25+60
+    y = 85
+    for i in right_ports:
+        if (i != -1):
+            if (ports[i]["dir"] == "input"): write_file.write(draw_port_IR(x, y))
+            elif (ports[i]["dir"] == "output"): write_file.write(draw_port_OR(x, y))
+            else: write_file.write(draw_port_IOR(x, y))
+            write_file.write(draw_TEXT_R(ports[i]["name"], x-5, y))
+        y = y + 50
+
+    write_file.write('</g>\n')
+    write_file.write('</svg>\n')
+
+
+
 
