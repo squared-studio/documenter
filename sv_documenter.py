@@ -267,25 +267,13 @@ if len(right_ports) > 0:
     if right_ports[len(right_ports) - 1] == -1:
         right_ports.pop(len(right_ports) - 1)
 
-while 1:
-    if len(left_ports) < 5:
-        left_ports.append(-1)
-    else:
-        break
-    if len(left_ports) < 5:
-        left_ports.insert(0, -1)
-    else:
-        break
+while len(left_ports) < 4:
+    left_ports.append(-1)
+    left_ports.insert(0, -1)
 
-while 1:
-    if len(right_ports) < 5:
-        right_ports.append(-1)
-    else:
-        break
-    if len(right_ports) < 5:
-        right_ports.insert(0, -1)
-    else:
-        break
+while len(right_ports) < 4:
+    right_ports.append(-1)
+    right_ports.insert(0, -1)
 
 while len(left_ports) < len(right_ports):
     left_ports.append(-1)
