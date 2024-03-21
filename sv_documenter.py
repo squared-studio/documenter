@@ -58,18 +58,42 @@ while (str_lines.find("import ") == 0):
     str_lines = str_lines[str_lines.find("; ")+2:]
 
 # get parameters
-file_params = ""
+params = []
 if (str_lines[0] == "#"):
     str_lines = re.sub("^# *", "", str_lines)
     file_params = get_block(str_lines)
     str_lines = str_lines.replace(file_params, "")
+    params_list = file_params[1:-1].split(",")
+    for param in params_list:
+        if "parameter " in param:
+            param_ = {}
+            param = re.sub("^ *parameter *","",param)
+            param = re.sub(" *$","",param)
+            param_["def"] = re.sub("^(.*?)= *","", param)
+            param = re.sub (" *=.*", "", param)
+            param_["name"] = re.sub("\[(.*?)\]","", param)
+            param_["name"] = re.sub(" *$","", param_["name"])
+            param_["name"] = re.sub(".* ","", param_["name"])
+            param_["dim"] = re.sub(".*"+param_["name"]+" *", "", param)
+            param_["type"] = re.sub(" *"+param_["name"]+".*", "", param)
+            param_["des"] = ""
+            for i in range (len(lines)):
+                line = re.sub("//.*", "", lines[i])
+                if (param_["name"] in line): break
+            if "//" in lines[i]:
+                param_["des"] = re.sub("^(.*?)// *","",lines[i])
+            else:
+                while "//" in lines[i-1]:
+                    i = i-1
+                    param_["des"] = re.sub("^(.*?)// *"," ",lines[i]) + param_["des"]
+            params.append(param_)
+
 
 # trim initial spaces
 str_lines = re.sub("^ *", "", str_lines)
 
 # get ports
 ports = []
-file_ports = ""
 if (file_type == "module" or file_type == "program" or file_type == "interface"):
     file_ports = get_block(str_lines)
     str_lines = str_lines.replace(file_ports, "")
@@ -79,7 +103,7 @@ if (file_type == "module" or file_type == "program" or file_type == "interface")
         port_ = {}
         port = re.sub("^ *","",port)
         port = re.sub(" *$","",port)
-        port_["name"] = re.sub("\[.*?\]","", port)
+        port_["name"] = re.sub("\[(.*?)\]","", port)
         port_["name"] = re.sub(" *$","", port_["name"])
         port_["name"] = re.sub("^.* ","",port_["name"])
         port_["dim"] = port[port.find(port_["name"]) + len(port_["name"]):]
@@ -95,16 +119,16 @@ if (file_type == "module" or file_type == "program" or file_type == "interface")
             line = re.sub("//.*", "", lines[i])
             if (port_["name"] in line): break
         if "//" in lines[i]:
-            port_["des"] = re.sub(".*?// *","",lines[i])
+            port_["des"] = re.sub("^(.*?)// *","",lines[i])
         else:
             while "//" in lines[i-1]:
                 i = i-1
-                port_["des"] = re.sub(".*?// *"," ",lines[i]) + port_["des"]
+                port_["des"] = re.sub("^(.*?)// *"," ",lines[i]) + port_["des"]
         ports.append(port_)
 
 # type closure
 str_lines = re.sub("^; *", "", str_lines)
-str_lines = re.sub(f"end{file_type} *", "", str_lines)
+str_lines = re.sub(f" end{file_type} *", "", str_lines)
 
 # write to file
 if (len(sys.argv) > 2):
@@ -121,11 +145,21 @@ with open(write_file_name, 'w') as write_file:
     write_file.write(f"{file_description}\n\n")
     # Parameters
     write_file.write("## Parameters\n")
-    write_file.write("|Parameter|Type|Default Value|Description|\n")
-    write_file.write("|-|-|-|-|\n")
+    write_file.write("|Name|Type|Dimension|Default Value|Description|\n")
+    write_file.write("|-|-|-|-|-|\n")
+    for param in params:
+        write_file.write("|" + param["name"])
+        write_file.write("|" + param["type"])
+        write_file.write("|" + param["dim"])
+        write_file.write("|" + param["def"])
+        write_file.write("|" + param["des"])
+        write_file.write("|\n")
+    
+    write_file.write("\n")  
+
     # Ports
     write_file.write("## Ports\n")
-    write_file.write("|Port|Direction|Type|Dimension|Description|\n")
+    write_file.write("|Name|Direction|Type|Dimension|Description|\n")
     write_file.write("|-|-|-|-|-|\n")
     for port in ports:
         write_file.write("|" + port["name"])
@@ -134,8 +168,4 @@ with open(write_file_name, 'w') as write_file:
         write_file.write("|" + port["dim"])
         write_file.write("|" + port["des"])
         write_file.write("|\n")
-
-
-# for line in lines:
-#     print(f"---{line}---")
 
