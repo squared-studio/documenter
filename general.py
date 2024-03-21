@@ -4,8 +4,7 @@ import re
 def trim_end (str):
     i = 0
     for i in range (len(str)-1, 0, -1):
-        if (str[i] != " ") and (str[i] != "\t") and (str[i] != "\n"):
-            break
+        if (str[i] != " ") and (str[i] != "\t") and (str[i] != "\n"): break
     return str [0:i+1]
 
 # returns Authoer, Description, Lines 
@@ -39,10 +38,14 @@ def c_header (line_array):
         file_author = re.sub(".*Author *: *", "", file_author)
     file_description = re.sub(".*Author.*\n*","",file_description)
     file_description = trim_end(file_description)
-    return {"Author":file_author, "Description":file_description, "Lines":line_in_header}
+    for i in range (line_in_header):
+        line_array.pop(0)
+    return file_author, file_description, line_array
 
 # get block
 def get_block (ip):
+    ip = ip.replace("begin","0️⃣")
+    ip = ip.replace("end","1️⃣")
     round_open_count = 0
     round_close_count = 0
     curly_open_count = 0
@@ -51,22 +54,20 @@ def get_block (ip):
     square_close_count = 0
     count = 0
     for count in range(0,len(ip)):
-        if (ip[count] == "("):
-            round_open_count += 1
-        if (ip[count] == ")"):
-            round_close_count += 1
-        if (ip[count] == "("):
-            curly_open_count += 1
-        if (ip[count] == ")"):
-            curly_close_count += 1
-        if (ip[count] == "("):
-            square_open_count += 1
-        if (ip[count] == ")"):
-            square_close_count += 1
+        if (ip[count] == "("): round_open_count += 1
+        if (ip[count] == ")"): round_close_count += 1
+        if (ip[count] == "("): curly_open_count += 1
+        if (ip[count] == ")"): curly_close_count += 1
+        if (ip[count] == "("): square_open_count += 1
+        if (ip[count] == ")"): square_close_count += 1
         if (
             round_open_count == round_close_count 
             and curly_open_count == curly_close_count
             and square_open_count == square_close_count
             ):
             break
-    return ip[0:count+1]
+    ip = ip[0:count+1]
+    ip = ip.replace("0️⃣","begin")
+    ip = ip.replace("1️⃣","end")
+    return ip
+
