@@ -28,6 +28,10 @@ def file_exists(filepath):
 # array of lines
 lines = []
 
+if (len(sys.argv) < 2):
+    print("No input file specified")
+    sys.exit()
+
 # Open the file in read mode
 # remove new line char
 # remove tailing spaces
