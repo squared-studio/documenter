@@ -1,5 +1,3 @@
-#!python
-
 from rtl_svg import (
     draw_port_IL,
     draw_port_IOL,
