@@ -8,8 +8,15 @@ from rtl_svg import (
     draw_port_IOR,
     draw_port_OR,
 )
-from rtl_svg import draw_TEXT_L, draw_TEXT_R
-from general import c_header, get_block
+from rtl_svg import (
+    draw_TEXT_L,
+    draw_TEXT_R,
+    draw_TEXT_Title
+)
+from general import (
+    c_header,
+    get_block
+)
 
 import re
 import sys
@@ -317,6 +324,8 @@ with open(output_dir + file_name + "_top.svg", "w") as write_file:
                 write_file.write(draw_port_IOR(x, y))
             write_file.write(draw_TEXT_R(ports[i]["name"], x - 5, y))
         y = y + 50
+
+    write_file.write(draw_TEXT_Title(file_name, 70+len(left_ports)*25, 100+len(left_ports)*50))
 
     write_file.write("</g>\n")
     write_file.write("</svg>\n")

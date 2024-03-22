@@ -33,6 +33,10 @@ def draw_TEXT_L(text, x, y):
     return f'<text x="{x}" y="{y}" dominant-baseline="hanging" text-anchor="start" font-size="20" style="fill:black;stroke:black;stroke-width:0">{text}</text>\n'
 
 
-# DRAW TEXT LEFT
+# DRAW TEXT RIGHT
 def draw_TEXT_R(text, x, y):
     return f'<text x="{x}" y="{y}" dominant-baseline="hanging" text-anchor="end" font-size="20" style="fill:black;stroke:black;stroke-width:0">{text}</text>\n'
+
+# DRAW TEXT RIGHT
+def draw_TEXT_Title(text, x, y):
+    return f'<text x="{x}" y="{y}" dominant-baseline="hanging" text-anchor="middle" font-size="30" style="fill:black;stroke:black;stroke-width:0">{text}</text>\n'
