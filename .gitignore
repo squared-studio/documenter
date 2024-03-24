@@ -1,4 +1,6 @@
-*.sv
-*.svg
-*.md
 __pycache__
+*.md
+*.svg
+imports.txt
+includes.txt
+unknown.txt
