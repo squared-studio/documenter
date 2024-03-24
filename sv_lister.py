@@ -141,7 +141,15 @@ while "`include " in txt:
     INCLUDES.append(_t)
 INCLUDES = list(set(INCLUDES))
 INCLUDES.sort()
-with open(output_dir + "includes.txt", "a") as file:
+print(f"INCLUDES:{INCLUDES}")
+if file_exists(output_dir + "includes.txt"):
+    with open(output_dir + "includes.txt", "r") as file:
+        items = file.readlines()
+        for item in items:
+            item = item.replace ("\n","")
+            if item != "":
+                INCLUDES.append(item)
+with open(output_dir + "includes.txt", "w") as file:
     for item in INCLUDES:
         file.write(item + "\n")
 
@@ -383,8 +391,8 @@ for i in range(len(txt)):
             elif first_word[0] == "$":
                 pass
             else:
-                print(f">>>{first_word}<<<")
-                print(f">>>{line}<<<")
+                # print(f">>>{first_word}<<<")
+                # print(f">>>{line}<<<")
                 UNKNOWN.append(first_word)
         else:
             if first_word == "typedef":
@@ -401,7 +409,15 @@ for i in range(len(txt)):
 
 IMPORTS = list(set(IMPORTS))
 IMPORTS.sort()
-with open(output_dir + "imports.txt", "a") as file:
+print(f"IMPORTS:{IMPORTS}")
+if file_exists(output_dir + "imports.txt"):
+    with open(output_dir + "imports.txt", "r") as file:
+        items = file.readlines()
+        for item in items:
+            item = item.replace ("\n","")
+            if item != "":
+                IMPORTS.append(item)
+with open(output_dir + "imports.txt", "w") as file:
     for item in IMPORTS:
         file.write(item + "\n")
 
@@ -415,14 +431,17 @@ UNKNOWN = list(set(UNKNOWN))
 if ":" in UNKNOWN:
     UNKNOWN.remove(":")
 UNKNOWN.sort()
-with open(output_dir + "unknown.txt", "a") as file:
+print(f"UNKNOWN:{UNKNOWN}")
+if file_exists(output_dir + "unknown.txt"):
+    with open(output_dir + "unknown.txt", "r") as file:
+        items = file.readlines()
+        for item in items:
+            item = item.replace ("\n","")
+            if item != "":
+                UNKNOWN.append(item)
+with open(output_dir + "unknown.txt", "w") as file:
     for item in UNKNOWN:
         file.write(item + "\n")
 
-print(f"TYPES:{TYPES}")
-print(f"\n\n")
-print(f"FILE_TYPE:{file_type}")
-print(f"FILE_NAME:{file_name}")
-print(f"INCLUDES:{INCLUDES}")
-print(f"IMPORTS:{IMPORTS}")
-print(f"UNKNOWN:{UNKNOWN}")
+# print(f"FILE_TYPE:{file_type}")
+# print(f"FILE_NAME:{file_name}")
