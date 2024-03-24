@@ -1,7 +1,6 @@
 import re
 import sys
 import os
-from turtle import forward
 
 INCLUDES = []
 IMPORTS = []
@@ -109,12 +108,12 @@ if len(sys.argv) < 2:
 
 if len(sys.argv) > 2:
     output_dir = sys.argv[2]
-    if (output_dir[-1]!="/"):
+    if output_dir[-1] != "/":
         output_dir = output_dir + "/"
 else:
     output_dir = "./"
 
-with open(sys.argv[1], "r") as input_file:
+with open(sys.argv[1], "r", errors="ignore") as input_file:
     txt = input_file.read()
 
 txt = re.sub("\t", " ", txt)
@@ -142,9 +141,9 @@ while "`include " in txt:
     INCLUDES.append(_t)
 INCLUDES = list(set(INCLUDES))
 INCLUDES.sort()
-with open(output_dir+'includes.txt', 'a') as file:
+with open(output_dir + "includes.txt", "a") as file:
     for item in INCLUDES:
-        file.write(item + '\n')
+        file.write(item + "\n")
 
 txt = re.sub(r"\\\n", "", txt)
 txt = re.sub(r"`define.*", "", txt)
@@ -189,6 +188,7 @@ elif ("program" in txt) and ("endprogram" in txt):
     file_type = "program"
 else:
     file_type = "macro"
+    print(f"INCLUDES:{INCLUDES}")
     sys.exit()
 txt = txt[: txt.find("end" + file_type)]
 
@@ -197,6 +197,7 @@ file_name = re.findall("\w+", txt)
 file_name = file_name[0]
 txt = txt[txt.find(file_name) + len(file_name) :]
 txt = re.sub("^ *", "", txt)
+TYPES.append(file_name)
 
 while txt.find("import ") == 0:
     _t = txt[: txt.find(";") + 1]
@@ -205,6 +206,7 @@ while txt.find("import ") == 0:
     _t = _t.replace("import ", "")
     _t = _t.replace(";", "")
     IMPORTS.append(re.sub(r"::.*", "", _t))
+    TYPES.append(re.sub(r"::.*", "", _t))
     TYPES.append(re.sub(r".*::", "", _t))
 txt = re.sub("^ *", "", txt)
 
@@ -225,6 +227,7 @@ if txt[0] == "#":
             _t = _t[0]
             param.replace(_t, "")
             IMPORTS.append(_t.replace("::", ""))
+            TYPES.append(_t.replace("::", ""))
 txt = re.sub("^ *", "", txt)
 
 _prent = txt.find("(")
@@ -244,8 +247,10 @@ while '"' in txt:
     _t = txt[_s : _e + 1]
     txt = txt.replace(_t, "")
 
+txt = re.sub("  *", " ", txt)
+
 while r"::" in txt:
-    _t = re.findall(r"\w+ \w+::\w+", txt)
+    _t = re.findall(r"import \w+::\w+", txt)
     if len(_t) == 0:
         _t = re.findall(r"\w+::\w+", txt)
     _t = _t[0]
@@ -253,8 +258,10 @@ while r"::" in txt:
         txt = txt.replace(_t + ";", "")
         _t = _t.replace("import ", "")
     else:
+        _t = re.sub("::.*", "", _t) + "::"
         txt = txt.replace(_t, "")
     IMPORTS.append(re.sub(r"::.*", "", _t))
+    TYPES.append(re.sub(r"::.*", "", _t))
     TYPES.append(re.sub(r".*::", "", _t))
 
 txt = re.sub(" *; *", ";", txt)
@@ -265,40 +272,20 @@ while "#" in txt:
     _t = "#" + find_block(txt[_s + 1 :])
     txt = txt.replace(_t, "")
 
-while "always" in txt:
-    _s = txt.find("always")
-    _semic = txt.find(";", _s)
-    _begin = txt.find("Á", _s)
-    if _begin == -1:
-        _begin = _semic + 10
-    if _semic == -1:
-        _semic = _begin + 10
-    if _begin < _semic:
-        _t = txt[_s : _begin + len(find_beginend(txt[_begin:]))]
-        txt = txt.replace(_t, "")
-
-while "initial" in txt:
-    _s = txt.find("initial")
-    _semic = txt.find(";", _s)
-    _begin = txt.find("Á", _s)
-    if _begin == -1:
-        _begin = _semic + 10
-    if _semic == -1:
-        _semic = _begin + 10
-    if _begin < _semic:
-        _t = txt[_s : _begin + len(find_beginend(txt[_begin:]))]
-        txt = txt.replace(_t, "")
-
-while "final" in txt:
-    _s = txt.find("final")
-    _semic = txt.find(";", _s)
-    _begin = txt.find("Á", _s)
-    if _begin == -1:
-        _begin = _semic + 10
-    if _semic == -1:
-        _semic = _begin + 10
-    if _begin < _semic:
-        _t = txt[_s : _begin + len(find_beginend(txt[_begin:]))]
+block_list = ["always", "initial", "final"]
+for word in block_list:
+    while word in txt:
+        _s = txt.find(word)
+        _semic = txt.find(";", _s)
+        _begin = txt.find("Á", _s)
+        if _begin == -1:
+            _begin = _semic + 10
+        if _semic == -1:
+            _semic = _begin + 10
+        if _begin < _semic:
+            _t = txt[_s : _begin + len(find_beginend(txt[_begin:]))]
+        else:
+            _t = txt[_s : _semic + 1]
         txt = txt.replace(_t, "")
 
 txt = re.sub("Á *: *\w+", "Á", txt)
@@ -311,12 +298,10 @@ txt = re.sub("` *", "`", txt)
 simple_constructs = [
     "case",
     "class",
-    "clocking",
     "function",
     "interface",
     "module",
     "package",
-    "primitive",
     "program",
     "task",
 ]
@@ -343,6 +328,10 @@ for word in simple_constructs:
                 _r = _r.replace(_k, "")
                 _g = _g + " " + _k
             _r = _g.replace("Á", "else Á")
+        elif ((first_word == "class") or (first_word == "interface") or (first_word == "module") or (first_word == "package") or (first_word == "program")):
+            _s = _t
+            _s = _s[len(word)+1:]
+            TYPES.append(_s[:_s.find(" ")])
         txt = txt.replace(_t, _r)
 
 txt = re.sub("^ *", "", txt)
@@ -382,13 +371,20 @@ for i in range(len(txt)):
     if ":" in line:
         line = re.sub("\w+ *: *", "", line)
     if line != "":
-        first_word = line[: line.find(" ")]
+        if " " in line:
+            first_word = line[: line.find(" ")]
+        else:
+            first_word = line
         if first_word not in TYPES:
             if first_word[-2:] == "_t":
                 TYPES.append(first_word)
             elif first_word[0] == "`":
                 pass
+            elif first_word[0] == "$":
+                pass
             else:
+                print(f">>>{first_word}<<<")
+                print(f">>>{line}<<<")
                 UNKNOWN.append(first_word)
         else:
             if first_word == "typedef":
@@ -405,9 +401,9 @@ for i in range(len(txt)):
 
 IMPORTS = list(set(IMPORTS))
 IMPORTS.sort()
-with open(output_dir+'imports.txt', 'a') as file:
+with open(output_dir + "imports.txt", "a") as file:
     for item in IMPORTS:
-        file.write(item + '\n')
+        file.write(item + "\n")
 
 
 TYPES = list(set(TYPES))
@@ -419,14 +415,14 @@ UNKNOWN = list(set(UNKNOWN))
 if ":" in UNKNOWN:
     UNKNOWN.remove(":")
 UNKNOWN.sort()
-with open(output_dir+'unknown.txt', 'a') as file:
+with open(output_dir + "unknown.txt", "a") as file:
     for item in UNKNOWN:
-        file.write(item + '\n')
+        file.write(item + "\n")
 
-# print(f"TYPES:{TYPES}")
-# print(f"\n\n")
-# print(f"FILE_TYPE:{file_type}")
-# print(f"FILE_NAME:{file_name}")
-# print(f"INCLUDES:{INCLUDES}")
-# print(f"IMPORTS:{IMPORTS}")
-# print(f"UNKNOWN:{UNKNOWN}")
+print(f"TYPES:{TYPES}")
+print(f"\n\n")
+print(f"FILE_TYPE:{file_type}")
+print(f"FILE_NAME:{file_name}")
+print(f"INCLUDES:{INCLUDES}")
+print(f"IMPORTS:{IMPORTS}")
+print(f"UNKNOWN:{UNKNOWN}")
