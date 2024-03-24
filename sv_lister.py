@@ -147,7 +147,7 @@ if file_exists(output_dir + "includes.txt"):
         items = file.readlines()
         for item in items:
             item = item.replace ("\n","")
-            if item != "":
+            if ((item != "") and (item not in INCLUDES)):
                 INCLUDES.append(item)
 with open(output_dir + "includes.txt", "w") as file:
     for item in INCLUDES:
@@ -415,7 +415,7 @@ if file_exists(output_dir + "imports.txt"):
         items = file.readlines()
         for item in items:
             item = item.replace ("\n","")
-            if item != "":
+            if ((item != "") and (item not in IMPORTS)):
                 IMPORTS.append(item)
 with open(output_dir + "imports.txt", "w") as file:
     for item in IMPORTS:
@@ -437,7 +437,7 @@ if file_exists(output_dir + "unknown.txt"):
         items = file.readlines()
         for item in items:
             item = item.replace ("\n","")
-            if item != "":
+            if ((item != "") and (item not in UNKNOWN)):
                 UNKNOWN.append(item)
 with open(output_dir + "unknown.txt", "w") as file:
     for item in UNKNOWN:
