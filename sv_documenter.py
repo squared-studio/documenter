@@ -37,9 +37,9 @@ if (len(sys.argv) < 2):
 # remove tailing spaces
 with open(sys.argv[1], "r") as read_file:
     for line in read_file:
-        line = re.sub("\n*", "", line)
-        line = re.sub(" *$", "", line)
-        line = re.sub("\t", " ", line)
+        line = re.sub(r"\n*", "", line)
+        line = re.sub(r" *$", "", line)
+        line = re.sub(r"\t", " ", line)
         lines.append(line)
 
 # generate header
@@ -50,10 +50,10 @@ count = 0
 file_type = ""
 file_name = ""
 for line in lines:
-    line = re.sub("^ *", "", line)
-    line = re.sub("^//.*", "", line)
-    line = re.sub("^`.*", "", line)
-    line = re.sub(" *$", "", line)
+    line = re.sub(r"^ *", "", line)
+    line = re.sub(r"^//.*", "", line)
+    line = re.sub(r"^`.*", "", line)
+    line = re.sub(r" *$", "", line)
     if line != "":
         break
     count += 1
@@ -63,10 +63,10 @@ for i in range(0, count):
 # Convert line array to a single string & remove inline comments
 str_lines = ""
 for line in lines:
-    line = re.sub("^ *", "", line)
-    line = re.sub("//.*", "", line)
+    line = re.sub(r"^ *", "", line)
+    line = re.sub(r"//.*", "", line)
     str_lines = str_lines + line + " "
-str_lines = re.sub("  *", " ", str_lines)
+str_lines = re.sub(r"  *", " ", str_lines)
 
 # get file type
 file_type = str_lines[: str_lines.find(" ")]
@@ -74,7 +74,7 @@ str_lines = re.sub(f"^{file_type} *", "", str_lines)
 
 # get file name
 file_name = str_lines[: str_lines.find(" ")]
-file_name = re.sub("#.*", "", file_name)
+file_name = re.sub(r"#.*", "", file_name)
 str_lines = re.sub(f"^{file_name} *", "", str_lines)
 
 # remove initial imports
@@ -84,56 +84,56 @@ while str_lines.find("import ") == 0:
 # get parameters
 params = []
 if str_lines[0] == "#":
-    str_lines = re.sub("^# *", "", str_lines)
+    str_lines = re.sub(r"^# *", "", str_lines)
     file_params = get_block(str_lines)
     str_lines = str_lines.replace(file_params, "")
     params_list = file_params[1:-1].split(",")
     for param in params_list:
         if "parameter " in param:
             param_ = {}
-            param = re.sub("^ *parameter *", "", param)
-            param = re.sub(" *$", "", param)
-            param_["def"] = re.sub("^(.*?)= *", "", param)
-            param = re.sub(" *=.*", "", param)
-            param_["name"] = re.sub("\[(.*?)\]", "", param)
-            param_["name"] = re.sub(" *$", "", param_["name"])
-            param_["name"] = re.sub(".* ", "", param_["name"])
-            param_["dim"] = re.sub(".*" + param_["name"] + " *", "", param)
-            param_["type"] = re.sub(" *" + param_["name"] + ".*", "", param)
+            param = re.sub(r"^ *parameter *", "", param)
+            param = re.sub(r" *$", "", param)
+            param_["def"] = re.sub(r"^(.*?)= *", "", param)
+            param = re.sub(r" *=.*", "", param)
+            param_["name"] = re.sub(r"\[(.*?)\]", "", param)
+            param_["name"] = re.sub(r" *$", "", param_["name"])
+            param_["name"] = re.sub(r".* ", "", param_["name"])
+            param_["dim"] = re.sub(r".*" + param_["name"] + " *", "", param)
+            param_["type"] = re.sub(r" *" + param_["name"] + ".*", "", param)
             param_["des"] = ""
             for i in range(len(lines)):
-                line = re.sub("//.*", "", lines[i])
+                line = re.sub(r"//.*", "", lines[i])
                 if param_["name"] in line:
                     break
             if "//" in lines[i]:
-                param_["des"] = re.sub("^(.*?)// *", "", lines[i])
+                param_["des"] = re.sub(r"^(.*?)// *", "", lines[i])
             else:
                 while "//" in lines[i - 1]:
                     i = i - 1
-                    param_["des"] = re.sub("^(.*?)// *", " ", lines[i]) + param_["des"]
+                    param_["des"] = re.sub(r"^(.*?)// *", " ", lines[i]) + param_["des"]
             params.append(param_)
 
 
 # trim initial spaces
-str_lines = re.sub("^ *", "", str_lines)
+str_lines = re.sub(r"^ *", "", str_lines)
 
 # get ports
 ports = []
 if file_type == "module" or file_type == "program" or file_type == "interface":
     file_ports = get_block(str_lines)
     str_lines = str_lines.replace(file_ports, "")
-    str_lines = re.sub("^ *", "", str_lines)
+    str_lines = re.sub(r"^ *", "", str_lines)
     ports_list = file_ports[1:-1].split(",")
     for port in ports_list:
         port_ = {}
-        port = re.sub("^ *", "", port)
-        port = re.sub(" *$", "", port)
-        port_["name"] = re.sub("\[(.*?)\]", "", port)
-        port_["name"] = re.sub(" *$", "", port_["name"])
-        port_["name"] = re.sub("^.* ", "", port_["name"])
+        port = re.sub(r"^ *", "", port)
+        port = re.sub(r" *$", "", port)
+        port_["name"] = re.sub(r"\[(.*?)\]", "", port)
+        port_["name"] = re.sub(r" *$", "", port_["name"])
+        port_["name"] = re.sub(r"^.* ", "", port_["name"])
         port_["dim"] = port[port.find(port_["name"]) + len(port_["name"]) :]
         port_["dim"] = port_["dim"].replace(" ", "")
-        port = re.sub(" *" + port_["name"] + ".*$", "", port)
+        port = re.sub(r" *" + port_["name"] + ".*$", "", port)
         if "input " in port:
             port_["dir"] = "input"
         elif "output " in port:
@@ -142,22 +142,22 @@ if file_type == "module" or file_type == "program" or file_type == "interface":
             port_["dir"] = "inout"
         else:
             port_["dir"] = "interface"
-        port_["type"] = re.sub("input  *|output  *|inout  *", "", port)
+        port_["type"] = re.sub(r"input  *|output  *|inout  *", "", port)
         port_["des"] = ""
         for i in range(len(lines)):
-            line = re.sub("//.*", "", lines[i])
+            line = re.sub(r"//.*", "", lines[i])
             if port_["name"] in line:
                 break
         if "//" in lines[i]:
-            port_["des"] = re.sub("^(.*?)// *", "", lines[i])
+            port_["des"] = re.sub(r"^(.*?)// *", "", lines[i])
         else:
             while "//" in lines[i - 1]:
                 i = i - 1
-                port_["des"] = re.sub("^(.*?)// *", " ", lines[i]) + port_["des"]
+                port_["des"] = re.sub(r"^(.*?)// *", " ", lines[i]) + port_["des"]
         ports.append(port_)
 
 # type closure
-str_lines = re.sub("^; *", "", str_lines)
+str_lines = re.sub(r"^; *", "", str_lines)
 str_lines = re.sub(f" end{file_type} *", "", str_lines)
 
 # write to file
@@ -211,11 +211,11 @@ with open(output_dir + file_name + ".md", "w") as write_file:
 
 
 for __start in range(len(lines)):
-    line = re.sub("//.*", "", lines[__start])
+    line = re.sub(r"//.*", "", lines[__start])
     if ports[0]["name"] in line:
         break
 for __end in range(len(lines)):
-    line = re.sub("//.*", "", lines[__end])
+    line = re.sub(r"//.*", "", lines[__end])
     if ports[len(ports) - 1]["name"] in line:
         break
 port_lines = lines[__start : __end + 1]
@@ -223,13 +223,13 @@ port_lines = lines[__start : __end + 1]
 __str = ""
 for line in port_lines:
     __str = __str + line + "\n"
-__str = re.sub("^ *//.*\n", "", __str, flags=re.MULTILINE)
+__str = re.sub(r"^ *//.*\n", "", __str, flags=re.MULTILINE)
 port_lines = __str.split("\n")
 
 num = 0
 for port in ports:
     for i in range(len(port_lines)):
-        line = re.sub(" *//.*", "", port_lines[i])
+        line = re.sub(r" *//.*", "", port_lines[i])
         if port["name"] in line:
             break
     ports[num]["index"] = i
