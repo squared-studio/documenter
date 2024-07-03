@@ -17,17 +17,17 @@ def c_header(line_array):
     multi_line_comment = 0
     line_in_header = 0
     for line in line_array:
-        test_line = re.sub("^ *", "", line)
-        line = re.sub(" *$", "", line)
+        test_line = re.sub(r"^ *", "", line)
+        line = re.sub(r" *$", "", line)
         if test_line[0:2] == "//":
-            file_description = file_description + re.sub("^//", "", line) + "\n"
+            file_description = file_description + re.sub(r"^//", "", line) + "\n"
             line_in_header += 1
         elif test_line[0:2] == "/*":
             multi_line_comment = 1
-            file_description = file_description + re.sub("^/\*", "", line) + "\n"
+            file_description = file_description + re.sub(r"^/\*", "", line) + "\n"
             line_in_header += 1
         elif test_line[0:2] == "*/":
-            file_description = file_description + re.sub("^\*/.*", "", line) + "\n"
+            file_description = file_description + re.sub(r"^\*/.*", "", line) + "\n"
             multi_line_comment = 0
             line_in_header += 1
         else:
@@ -42,8 +42,8 @@ def c_header(line_array):
                 "\n", file_description.find("Author")
             )
         ]
-        file_author = re.sub(".*Author *: *", "", file_author)
-    file_description = re.sub(".*Author.*\n*", "", file_description)
+        file_author = re.sub(r".*Author *: *", "", file_author)
+    file_description = re.sub(r".*Author.*\n*", "", file_description)
     file_description = trim_end(file_description)
     for i in range(line_in_header):
         line_array.pop(0)

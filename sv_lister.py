@@ -116,9 +116,9 @@ else:
 with open(sys.argv[1], "r", errors="ignore") as input_file:
     txt = input_file.read()
 
-txt = re.sub("\t", " ", txt)
-txt = re.sub("//.*", "", txt)
-txt = re.sub("# *\(", "#(", txt)
+txt = re.sub(r"\t", " ", txt)
+txt = re.sub(r"//.*", "", txt)
+txt = re.sub(r"# *\(", "#(", txt)
 txt = re.sub(r" *:: *", r"::", txt)
 txt = re.sub(r" *;", ";", txt)
 
@@ -204,19 +204,19 @@ txt = txt[txt.find(file_type) + len(file_type) + 1 :]
 file_name = re.findall("\w+", txt)
 file_name = file_name[0]
 txt = txt[txt.find(file_name) + len(file_name) :]
-txt = re.sub("^ *", "", txt)
+txt = re.sub(r"^ *", "", txt)
 TYPES.append(file_name)
 
 while txt.find("import ") == 0:
     _t = txt[: txt.find(";") + 1]
     txt = txt[txt.find(";") + 1 :]
-    txt = re.sub("^ *", "", txt)
+    txt = re.sub(r"^ *", "", txt)
     _t = _t.replace("import ", "")
     _t = _t.replace(";", "")
     IMPORTS.append(re.sub(r"::.*", "", _t))
     TYPES.append(re.sub(r"::.*", "", _t))
     TYPES.append(re.sub(r".*::", "", _t))
-txt = re.sub("^ *", "", txt)
+txt = re.sub(r"^ *", "", txt)
 
 if txt[0] == "#":
     txt = txt[1:]
@@ -224,7 +224,7 @@ if txt[0] == "#":
     txt = txt.replace(params, "")
     params = params[1:-1].split(",")
     for param in params:
-        param = re.sub("^ *", "", param)
+        param = re.sub(r"^ *", "", param)
         param = param[param.find(" ") + 1 :]
         first_word = param[: param.find(" ")]
         if first_word == "type":
@@ -236,7 +236,7 @@ if txt[0] == "#":
             param.replace(_t, "")
             IMPORTS.append(_t.replace("::", ""))
             TYPES.append(_t.replace("::", ""))
-txt = re.sub("^ *", "", txt)
+txt = re.sub(r"^ *", "", txt)
 
 _prent = txt.find("(")
 _semic = txt.find(";")
@@ -247,7 +247,7 @@ if _prent == -1:
 if _prent < _semic:
     txt = txt.replace(find_block(txt), "")
 
-txt = re.sub("^ *; *", "", txt)
+txt = re.sub(r"^ *; *", "", txt)
 
 while '"' in txt:
     _s = txt.find('"')
@@ -255,7 +255,7 @@ while '"' in txt:
     _t = txt[_s : _e + 1]
     txt = txt.replace(_t, "")
 
-txt = re.sub("  *", " ", txt)
+txt = re.sub(r"  *", " ", txt)
 
 while r"::" in txt:
     _t = re.findall(r"import \w+::\w+", txt)
@@ -266,14 +266,14 @@ while r"::" in txt:
         txt = txt.replace(_t + ";", "")
         _t = _t.replace("import ", "")
     else:
-        _t = re.sub("::.*", "", _t) + "::"
+        _t = re.sub(r"::.*", "", _t) + "::"
         txt = txt.replace(_t, "")
     IMPORTS.append(re.sub(r"::.*", "", _t))
     TYPES.append(re.sub(r"::.*", "", _t))
     TYPES.append(re.sub(r".*::", "", _t))
 
-txt = re.sub(" *; *", ";", txt)
-txt = re.sub("^ *", "", txt)
+txt = re.sub(r" *; *", ";", txt)
+txt = re.sub(r"^ *", "", txt)
 
 while "#" in txt:
     _s = txt.find("#")
@@ -296,12 +296,12 @@ for word in block_list:
             _t = txt[_s : _semic + 1]
         txt = txt.replace(_t, "")
 
-txt = re.sub("Á *: *\w+", "Á", txt)
-txt = re.sub("À *: *\w+", "À", txt)
+txt = re.sub(r"Á *: *\w+", "Á", txt)
+txt = re.sub(r"À *: *\w+", "À", txt)
 
-txt = re.sub(" *\( *", " ( ", txt)
-txt = re.sub(" *\) *", " ) ", txt)
-txt = re.sub("` *", "`", txt)
+txt = re.sub(r" *\( *", " ( ", txt)
+txt = re.sub(r" *\) *", " ) ", txt)
+txt = re.sub(r"` *", "`", txt)
 
 simple_constructs = [
     "case",
@@ -317,8 +317,8 @@ simple_constructs = [
 for word in simple_constructs:
     while word in txt:
         # print(f">>>{word}<<<")
-        txt = re.sub("  *", " ", txt)
-        txt = re.sub("end" + word + " *: *\w+", "end" + word, txt)
+        txt = re.sub(r"  *", " ", txt)
+        txt = re.sub(r"end" + word + " *: *\w+", "end" + word, txt)
         _s = txt.find(word)
         _e = txt.find("end" + word, _s)
         _t = txt[_s : _e + 3 + len(word)]
@@ -342,19 +342,19 @@ for word in simple_constructs:
             TYPES.append(_s[:_s.find(" ")])
         txt = txt.replace(_t, _r)
 
-txt = re.sub("^ *", "", txt)
-txt = re.sub("  *", " ", txt)
+txt = re.sub(r"^ *", "", txt)
+txt = re.sub(r"  *", " ", txt)
 
 txt = txt.replace("for (", "if (")
 txt = txt.replace("else if (", "if (")
 
-txt = re.sub("  *", " ", txt)
+txt = re.sub(r"  *", " ", txt)
 
 while "if (" in txt:
     _s = txt.find("if (")
     _t = "if " + find_block(txt[_s + 3 :])
     txt = txt.replace(_t, "else ")
-    txt = re.sub("  *", " ", txt)
+    txt = re.sub(r"  *", " ", txt)
 
 while "else " in txt:
     _s = txt.find("else ")
@@ -363,21 +363,21 @@ while "else " in txt:
         txt = txt.replace(_t, _t[6:-1])
     else:
         txt = txt.replace("else ", "", 1)
-    txt = re.sub("  *", " ", txt)
+    txt = re.sub(r"  *", " ", txt)
 
 while "(" in txt:
     _s = txt.find("(")
     _t = find_block(txt[_s:])
     txt = txt.replace(_t, "")
-    txt = re.sub("  *", " ", txt)
+    txt = re.sub(r"  *", " ", txt)
 
 txt = txt.split(";")
 
 for i in range(len(txt)):
-    line = re.sub("^ *", "", txt[i])
-    line = re.sub(" *$", "", line)
+    line = re.sub(r"^ *", "", txt[i])
+    line = re.sub(r" *$", "", line)
     if ":" in line:
-        line = re.sub("\w+ *: *", "", line)
+        line = re.sub(r"\w+ *: *", "", line)
     if line != "":
         if " " in line:
             first_word = line[: line.find(" ")]
@@ -396,7 +396,7 @@ for i in range(len(txt)):
                 UNKNOWN.append(first_word)
         else:
             if first_word == "typedef":
-                line = re.sub("^.* ", "", line)
+                line = re.sub(r"^.* ", "", line)
                 TYPES.append(line)
             if (first_word == "localparam") or (first_word == "parameter"):
                 line = line[line.find(" ") + 1 :]
