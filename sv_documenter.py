@@ -13,16 +13,12 @@ from rtl_svg import (
 )
 from general import (
     c_header,
-    get_block
+    get_block,
+    file_exists
 )
 
 import re
 import sys
-import os
-
-
-def file_exists(filepath):
-    return os.path.isfile(filepath)
 
 
 # array of lines
@@ -89,9 +85,10 @@ if str_lines[0] == "#":
     str_lines = str_lines.replace(file_params, "")
     params_list = file_params[1:-1].split(",")
     for param in params_list:
-        if "parameter " in param:
+        if ("parameter " in param) or ("localparam " in param):
             param_ = {}
             param = re.sub(r"^ *parameter *", "", param)
+            param = re.sub(r"^ *localparam *", "", param)
             param = re.sub(r" *$", "", param)
             param_["def"] = re.sub(r"^(.*?)= *", "", param)
             param = re.sub(r" *=.*", "", param)

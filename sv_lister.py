@@ -1,6 +1,10 @@
 import re
 import sys
-import os
+
+from general import (
+    file_exists
+)
+
 
 INCLUDES = []
 IMPORTS = []
@@ -68,10 +72,6 @@ TYPES = [
     "xor",
 ]
 UNKNOWN = []
-
-
-def file_exists(filepath):
-    return os.path.isfile(filepath)
 
 
 def find_beginend(ip: str):

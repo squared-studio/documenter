@@ -1,4 +1,5 @@
 import re
+import os
 
 
 # trim off tailing newline, space, tab
@@ -91,3 +92,9 @@ def get_block(ip):
     ip = ip.replace("Á", "begin")
     ip = ip.replace("À", "end")
     return ip
+
+
+# returns whether file exists
+def file_exists(filepath):
+    return os.path.isfile(filepath)
+
